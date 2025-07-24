@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staff Availability Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #e0e7ff;
+        }
+
+        .header h1 {
+            color: #1e293b;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 1.1rem;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 15px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .control-group label {
+            font-weight: 600;
+            color: #374151;
+            font-size: 0.9rem;
+        }
+
+        .control-group input, .control-group select, .control-group button {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .control-group input:focus, .control-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .staff-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .staff-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+
+        .staff-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+
+        .staff-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .staff-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1.2rem;
+            margin-right: 15px;
+        }
+
+        .staff-info h3 {
+            font-size: 1.3rem;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .staff-info p {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .availability-status {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .available {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .busy {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .partially-available {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .schedule-list {
+            list-style: none;
+        }
+
+        .schedule-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .schedule-item:last-child {
+            border-bottom: none;
+        }
+
+        .schedule-time {
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .schedule-event {
+            color: #64748b;
+            font-size: 0.9rem;
+            flex-grow: 1;
+            margin-left: 15px;
+        }
+
+        .team-summary {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            border: 1px solid #e2e8f0;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .summary-card {
+            text-align: center;
+            padding: 20px;
+            background: #f8fafc;
+            border-radius: 10px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .summary-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(5px);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .integration-status {
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            color: #92400e;
+            text-align: center;
+        }
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+            
+            .staff-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Staff Availability Dashboard</h1>
+            <p>Unified view of your team's Google Calendar availability</p>
+        </div>
+
+        <div class="integration-status">
+            <strong>Demo Mode:</strong> This is a demonstration interface. To connect with actual Google Calendars, you'll need to implement Google Calendar API integration with proper authentication.
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="dateView">Date</label>
+                <input type="date" id="dateView" value="">
+            </div>
+            <div class="control-group">
+                <label for="viewMode">View Mode</label>
+                <select id="viewMode">
+                    <option value="day">Day View</option>
+                    <option value="week">Week View</option>
+                    <option value="month">Month View</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="departmentFilter">Department</label>
+                <select id="departmentFilter">
+                    <option value="all">All Departments</option>
+                    <option value="sales">Sales</option>
+                    <option value="marketing">Marketing</option>
+                    <option value="development">Development</option>
+                    <option value="support">Support</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button class="btn" onclick="refreshCalendars()">Refresh Data</button>
+            </div>
+            <div class="control-group">
+                <label>&nbsp;</label>
+                <button class="btn btn-secondary" onclick="openAddStaffModal()">Add Staff Member</button>
+            </div>
+        </div>
+
+        <div class="staff-grid" id="staffGrid">
+            <!-- Staff cards will be populated by JavaScript -->
+        </div>
+
+        <div class="team-summary">
+            <h2>Team Summary</h2>
+            <div class="summary-grid">
+                <div class="summary-card">
+                    <div class="summary-number" id="totalStaff">8</div>
+                    <div class="summary-label">Total Staff</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number" id="availableStaff">5</div>
+                    <div class="summary-label">Available Now</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number" id="busyStaff">2</div>
+                    <div class="summary-label">In Meetings</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-number" id="partiallyAvailable">1</div>
+                    <div class="summary-label">Partially Available</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Staff Modal -->
+    <div id="addStaffModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Add Staff Member</h2>
+            <div style="margin-top: 20px;">
+                <div class="control-group" style="margin-bottom: 15px;">
+                    <label>Name</label>
+                    <input type="text" id="staffName" placeholder="Enter staff member name">
+                </div>
+                <div class="control-group" style="margin-bottom: 15px;">
+                    <label>Email</label>
+                    <input type="email" id="staffEmail" placeholder="Enter Google Calendar email">
+                </div>
+                <div class="control-group" style="margin-bottom: 15px;">
+                    <label>Department</label>
+                    <select id="staffDepartment">
+                        <option value="sales">Sales</option>
+                        <option value="marketing">Marketing</option>
+                        <option value="development">Development</option>
+                        <option value="support">Support</option>
+                    </select>
+                </div>
+                <div class="control-group" style="margin-bottom: 15px;">
+                    <label>Role</label>
+                    <input type="text" id="staffRole" placeholder="Enter job title/role">
+                </div>
+                <button class="btn" onclick="addStaffMember()" style="width: 100%; margin-top: 10px;">
+                    Add Staff Member
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Sample staff data - in real implementation, this would come from Google Calendar API
+        let staffData = [
+            {
+                id: 1,
+                name: "Sarah Johnson",
+                email: "sarah.johnson@company.com",
+                department: "sales",
+                role: "Sales Manager",
+                status: "available",
+                events: [
+                    { time: "09:00-10:00", event: "Team Standup" },
+                    { time: "14:00-15:30", event: "Client Call - ABC Corp" }
+                ]
+            },
+            {
+                id: 2,
+                name: "Mike Chen",
+                email: "mike.chen@company.com",
+                department: "development",
+                role: "Senior Developer",
+                status: "busy",
+                events: [
+                    { time: "09:00-12:00", event: "Code Review Session" },
+                    { time: "13:00-14:00", event: "Sprint Planning" },
+                    { time: "15:00-17:00", event: "Development Work" }
+                ]
+            },
+            {
+                id: 3,
+                name: "Emma Wilson",
+                email: "emma.wilson@company.com",
+                department: "marketing",
+                role: "Marketing Director",
+                status: "partially-available",
+                events: [
+                    { time: "10:00-11:00", event: "Campaign Review" },
+                    { time: "16:00-17:00", event: "Social Media Planning" }
+                ]
+            },
+            {
+                id: 4,
+                name: "David Brown",
+                email: "david.brown@company.com",
+                department: "support",
+                role: "Support Lead",
+                status: "available",
+                events: [
+                    { time: "11:00-12:00", event: "Support Team Meeting" }
+                ]
+            },
+            {
+                id: 5,
+                name: "Lisa Zhang",
+                email: "lisa.zhang@company.com",
+                department: "sales",
+                role: "Account Executive",
+                status: "available",
+                events: [
+                    { time: "15:00-16:00", event: "Prospect Call" }
+                ]
+            },
+            {
+                id: 6,
+                name: "Tom Rodriguez",
+                email: "tom.rodriguez@company.com",
+                department: "development",
+                role: "Frontend Developer",
+                status: "available",
+                events: [
+                    { time: "09:30-10:30", event: "UI Review" },
+                    { time: "14:00-15:00", event: "1:1 with Manager" }
+                ]
+            },
+            {
+                id: 7,
+                name: "Anna Smith",
+                email: "anna.smith@company.com",
+                department: "marketing",
+                role: "Content Specialist",
+                status: "busy",
+                events: [
+                    { time: "09:00-11:00", event: "Content Creation Workshop" },
+                    { time: "13:00-15:00", event: "Blog Writing Session" },
+                    { time: "16:00-17:00", event: "SEO Review" }
+                ]
+            },
+            {
+                id: 8,
+                name: "James Park",
+                email: "james.park@company.com",
+                department: "support",
+                role: "Customer Success Manager",
+                status: "available",
+                events: [
+                    { time: "10:00-11:00", event: "Customer Check-in" }
+                ]
+            }
+        ];
+
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('dateView').value = today;
+            
+            renderStaffCards();
+            updateSummary();
+        });
+
+        function renderStaffCards() {
+            const staffGrid = document.getElementById('staffGrid');
+            const departmentFilter = document.getElementById('departmentFilter').value;
+            
+            let filteredStaff = staffData;
+            if (departmentFilter !== 'all') {
+                filteredStaff = staffData.filter(staff => staff.department === departmentFilter);
+            }
+            
+            staffGrid.innerHTML = '';
+            
+            filteredStaff.forEach(staff => {
+                const statusClass = staff.status;
+                const statusText = staff.status === 'partially-available' ? 'Partially Available' : 
+                                 staff.status.charAt(0).toUpperCase() + staff.status.slice(1);
+                
+                const initials = staff.name.split(' ').map(n => n[0]).join('');
+                
+                const eventsHtml = staff.events.map(event => `
+                    <li class="schedule-item">
+                        <span class="schedule-time">${event.time}</span>
+                        <span class="schedule-event">${event.event}</span>
+                    </li>
+                `).join('');
+                
+                const cardHtml = `
+                    <div class="staff-card">
+                        <div class="staff-header">
+                            <div class="staff-avatar">${initials}</div>
+                            <div class="staff-info">
+                                <h3>${staff.name}</h3>
+                                <p>${staff.role} • ${staff.department.charAt(0).toUpperCase() + staff.department.slice(1)}</p>
+                            </div>
+                        </div>
+                        <div class="availability-status ${statusClass}">${statusText}</div>
+                        <ul class="schedule-list">
+                            ${eventsHtml}
+                        </ul>
+                    </div>
+                `;
+                
+                staffGrid.innerHTML += cardHtml;
+            });
+        }
+
+        function updateSummary() {
+            const total = staffData.length;
+            const available = staffData.filter(s => s.status === 'available').length;
+            const busy = staffData.filter(s => s.status === 'busy').length;
+            const partial = staffData.filter(s => s.status === 'partially-available').length;
+            
+            document.getElementById('totalStaff').textContent = total;
+            document.getElementById('availableStaff').textContent = available;
+            document.getElementById('busyStaff').textContent = busy;
+            document.getElementById('partiallyAvailable').textContent = partial;
+        }
+
+        function refreshCalendars() {
+            // Simulate API call
+            const btn = event.target;
+            btn.textContent = 'Refreshing...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                // Simulate some status changes
+                if (Math.random() > 0.5) {
+                    staffData[0].status = staffData[0].status === 'available' ? 'busy' : 'available';
+                }
+                
+                renderStaffCards();
+                updateSummary();
+                
+                btn.textContent = 'Refresh Data';
+                btn.disabled = false;
+            }, 1500);
+        }
+
+        function openAddStaffModal() {
+            document.getElementById('addStaffModal').style.display = 'block';
+        }
+
+        function closeModal() {
+            document.getElementById('addStaffModal').style.display = 'none';
+        }
+
+        function addStaffMember() {
+            const name = document.getElementById('staffName').value;
+            const email = document.getElementById('staffEmail').value;
+            const department = document.getElementById('staffDepartment').value;
+            const role = document.getElementById('staffRole').value;
+            
+            if (!name || !email || !role) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            const newStaff = {
+                id: staffData.length + 1,
+                name: name,
+                email: email,
+                department: department,
+                role: role,
+                status: 'available',
+                events: []
+            };
+            
+            staffData.push(newStaff);
+            renderStaffCards();
+            updateSummary();
+            closeModal();
+            
+            // Clear form
+            document.getElementById('staffName').value = '';
+            document.getElementById('staffEmail').value = '';
+            document.getElementById('staffRole').value = '';
+        }
+
+        // Event listeners
+        document.getElementById('departmentFilter').addEventListener('change', renderStaffCards);
+        document.getElementById('dateView').addEventListener('change', function() {
+            // In real implementation, this would fetch data for the selected date
+            console.log('Date changed to:', this.value);
+        });
+        document.getElementById('viewMode').addEventListener('change', function() {
+            // In real implementation, this would change the view layout
+            console.log('View mode changed to:', this.value);
+        });
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('addStaffModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+    </script>
+</body>
+</html>

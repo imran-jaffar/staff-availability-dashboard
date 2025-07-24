@@ -1,0 +1,21 @@
+{
+  "name": "staff-availability-dashboard",
+  "version": "1.0.0",
+  "description": "Staff availability dashboard with Google Calendar integration",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["staff", "calendar", "availability", "dashboard"],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
